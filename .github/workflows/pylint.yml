@@ -5,6 +5,7 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
@@ -13,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -22,26 +23,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install pylint nbqa
 
-      - name: Analyse Python files and notebooks with pylint
+      - name: Analyse Python files & Notebooks with pylint
         env:
           PYTHONPATH: ${{ github.workspace }}:${{ env.PYTHONPATH }}
         run: |
-          FILES_PY=$(git ls-files '*.py' || true)
-          FILES_IPYNB=$(git ls-files '*.ipynb' || true)
+          PY_FILES_COUNT=$(git ls-files '*.py' | wc -l || true)
+          NB_FILES_COUNT=$(git ls-files '*.ipynb' | wc -l || true)
 
-          if [ -z "$FILES_PY" ] && [ -z "$FILES_IPYNB" ]; then
+          if [ "$PY_FILES_COUNT" -eq 0 ] && [ "$NB_FILES_COUNT" -eq 0 ]; then
             echo "No Python files or notebooks to lint"
             exit 0
           fi
 
-          if [ -n "$FILES_PY" ]; then
-            echo "Running pylint on Python files:"
-            echo "$FILES_PY"
-            python -m pylint $FILES_PY
+          if [ "$PY_FILES_COUNT" -gt 0 ]; then
+            echo "Running pylint on Python (.py) files:"
+            git ls-files '*.py'
+            # Safe for paths with spaces
+            git ls-files '*.py' -z | xargs -0 python -m pylint --exit-zero
           fi
 
-          if [ -n "$FILES_IPYNB" ]; then
-            echo "Running pylint (via nbqa) on notebooks:"
-            echo "$FILES_IPYNB"
-            python -m nbqa pylint $FILES_IPYNB
+          if [ "$NB_FILES_COUNT" -gt 0 ]; then
+            echo "Running pylint (via nbqa) on Jupyter Notebooks:"
+            git ls-files '*.ipynb'
+            git ls-files '*.ipynb' -z | xargs -0 python -m nbqa pylint --exit-zero
           fi
