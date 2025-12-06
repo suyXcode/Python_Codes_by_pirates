@@ -8,26 +8,40 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
+
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pylint
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint nbqa
 
-    - name: Analysing the code with pylint
-      env:
-        PYTHONPATH: ${{ github.workspace }}:${{ env.PYTHONPATH }}
-      run: |
-        FILES=$(git ls-files '*.py' || true)
-        if [ -z "$FILES" ]; then
-          echo "No python files to lint"
-          exit 0
-        fi
-        python -m pylint $FILES
+      - name: Analyse Python files and notebooks with pylint
+        env:
+          PYTHONPATH: ${{ github.workspace }}:${{ env.PYTHONPATH }}
+        run: |
+          FILES_PY=$(git ls-files '*.py' || true)
+          FILES_IPYNB=$(git ls-files '*.ipynb' || true)
+
+          if [ -z "$FILES_PY" ] && [ -z "$FILES_IPYNB" ]; then
+            echo "No Python files or notebooks to lint"
+            exit 0
+          fi
+
+          if [ -n "$FILES_PY" ]; then
+            echo "Running pylint on Python files:"
+            echo "$FILES_PY"
+            python -m pylint $FILES_PY
+          fi
+
+          if [ -n "$FILES_IPYNB" ]; then
+            echo "Running pylint (via nbqa) on notebooks:"
+            echo "$FILES_IPYNB"
+            python -m nbqa pylint $FILES_IPYNB
+          fi
