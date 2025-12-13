@@ -1,4 +1,4 @@
-# 25.Wap to check the no. is a strong no. or not.
+#Wap to check the no. is a strong no. or not.
 n=int(input("Enter The int num:"))
 sum=0
 a=n

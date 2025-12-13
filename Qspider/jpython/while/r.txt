@@ -1,0 +1,63 @@
+class qspi:
+    name='suyash'
+    location='noida'
+    phno=9554860190
+    bhead='Anuj'
+s1=qspi()
+print("Name :",qspi.name)
+print("Phone Num:",qspi.phno)
+print("Location :",s1.location)
+print("Name :",s1.name)
+print("Branch Head :",s1.bhead)
+
+
+
+
+
+
+
+
+
+class qspi:
+    name='Suyash1'
+    location='Noida'
+    phno=9554860190
+    bhead='Anuj'
+    def __init__(self,name,course,sphno):
+        self.name=name
+        self.course=course
+        self.sphno=sphno
+s1=qspi('Suyash','python',9554860190)
+print("Name :",s1.name)
+print("Course :",s1.course)
+print("Phone Num:",s1.sphno)
+print("Location :",s1.location)
+print("Branch Head :",s1.bhead)
+
+
+
+
+#----------------------------------------------------------------------------------------------
+l = eval(input("Enter the List : "))   # Example: [2,3,4,5,6,7,8,9,11]
+if type(l) == list:
+    i = 0
+    primes = []
+    while i < len(l):
+        num = l[i]
+        if num > 1:        # prime numbers are greater than 1
+            j = 2
+            is_prime = True
+            while j <= num // 2:   # check divisibility
+                if num % j == 0:
+                    is_prime = False
+                    break
+                j += 1
+            if is_prime:
+                primes.append(num)
+        i += 1
+
+    print("Prime numbers from list:", primes)
+
+
+
+

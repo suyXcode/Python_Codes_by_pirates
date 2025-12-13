@@ -1,0 +1,23 @@
+Looping statement:=
+
+This is statement which is used to execute same set of insturction repeatedly ,
+there are two type of looping statement in python.
+
+1. for loop
+2. while loop
+
+
+while loop:
+
+It is used execute same set of insturction repeatedly until and unless the looping condition became false.
+
+>> initialization and updation are compulsary.
+
+
+Syntax:-
+
+
+i=0  (initialization)
+while <condition>:
+    tsb
+    i=i+1  (Updation)

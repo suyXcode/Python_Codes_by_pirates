@@ -1,0 +1,4 @@
+pytest==8.3.3
+flake8==7.1.1        # Code style checker (optional)
+black==24.10.0       # Code formatter (optional)
+mypy==1.13.0         # Static type checker (optional)

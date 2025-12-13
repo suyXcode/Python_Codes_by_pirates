@@ -1,0 +1,59 @@
+
+Argument : 
+------------
+
+These are the values pass to the function for further processing.
+
+
+Formal argument 👍 (Parameters)
+--------------------------------
+
+-- known as Parameters, who is receive the values during the function call.
+-- pass in function defintion.
+
+
+Actual argument :(Actual Values)
+---------------------------------
+
+-- These are the actual values passed to function 
+-- pass in function calling.
+
+Syntax: 
+--------
+
+def fname(parameter):
+    sb 
+fname(argument)
+    
+
+Types of Argument :
+--------------------
+
+There are five types of arguments.
+
+1. Positional Argument
+2. Keyword Argument
+3. Default Argument
+4. Variable Length Argument
+5. Variable Length Keyword Argument
+
+
+1. Positional Argument :
+----------------------------
+
+-- These are present function declaration / definition
+-- the length of formal argument should be equal to actual arguments.
+-- here order and position are matters
+
+
+Syntax : 
+--------
+
+def f(argu1,argu2,...,argun):
+    sb
+f(val1,val2,...,valn)
+
+Example:
+def f(a,b,c):
+    print(a,b,c)
+f(1,23,4)
