@@ -75,6 +75,12 @@ You can also try solving them in **C, C++, Java, or JavaScript** for practice.
 
 ---
 
-## 📌 Author
+
+## 👨‍💻 Author
+
 👤 **Suyash Singh**  
-📧 *[LinkedIn ](https://www.linkedin.com/in/suyxcode/)*  
+🔗 [Github](https://github.com/suyXcode)  
+💼 [Linkedin](https://www.linkedin.com/in/suyxcode/)  
+🌐 [Portfolio](https://suyxcode.netlify.app)
+
+
