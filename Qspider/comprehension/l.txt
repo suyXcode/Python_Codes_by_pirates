@@ -1,6 +1,0 @@
-Comprehension:
-A conscie way of creating a new mutable collection.
-
-conscie : single expression /single line of statement.
-
-there are three type of comprehension.
