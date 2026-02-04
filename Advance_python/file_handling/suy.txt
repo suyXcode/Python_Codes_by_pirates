@@ -1,0 +1,6 @@
+hello world
+welcome to python programming
+file handling in python
+hello world
+welcome to python programming
+file handling in python
