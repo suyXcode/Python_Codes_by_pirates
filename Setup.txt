@@ -1,0 +1,389 @@
+================================================================
+        VOTING WEB APPLICATION — SETUP GUIDE
+        Django (Backend) + React (Frontend)
+================================================================
+
+WHAT IS THIS PROJECT?
+---------------------
+A full-stack digital voting application with 3 roles:
+  - Admin     : Creates elections, manages voters and candidates
+  - Voter     : Registers, logs in, and casts votes
+  - Candidate : Views their election stats and manages profile
+
+================================================================
+STEP 1 — INSTALL REQUIRED SOFTWARE (do this first)
+================================================================
+
+Before anything, make sure these are installed on your PC:
+
+  1. Python 3.10 or higher
+     Download from: https://www.python.org/downloads/
+     During install: CHECK the box "Add Python to PATH"
+
+  2. Node.js 18 or higher
+     Download from: https://nodejs.org/
+     Download the LTS version
+
+  3. VS Code (recommended editor)
+     Download from: https://code.visualstudio.com/
+
+To verify everything is installed, open PowerShell and run:
+     python --version       (should show 3.10+)
+     node --version         (should show v18+)
+     npm --version          (should show 9+)
+
+================================================================
+STEP 2 — EXTRACT THE PROJECT
+================================================================
+
+  1. Extract the ZIP file to any folder on your PC
+     Example: C:\Projects\voting\
+
+  2. After extracting you should see:
+     voting\
+       backend\
+       frontend\
+       README.txt
+
+================================================================
+STEP 3 — SETUP THE BACKEND (Django)
+================================================================
+
+Open PowerShell and run these commands ONE BY ONE:
+
+--- Navigate to backend folder ---
+
+  cd C:\Projects\voting\backend
+  (change this path to wherever you extracted the project)
+
+--- Create virtual environment ---
+
+  python -m venv .venv
+
+--- Activate virtual environment ---
+
+  .venv\Scripts\activate
+
+  You should see (.venv) appear at the start of the line.
+  This means the virtual environment is active.
+
+--- Install all Python packages ---
+
+  pip install django djangorestframework djangorestframework-simplejwt django-cors-headers pillow
+
+--- Create missing files (run each block separately) ---
+
+  Copy and run this in PowerShell to create accounts/serializers.py:
+
+  $s = @'
+from rest_framework import serializers
+from django.contrib.auth.password_validation import validate_password
+from .models import User
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id','username','email','first_name','last_name','role','phone','photo','voter_id','is_verified','bio']
+        read_only_fields = ['id','role','is_verified']
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password  = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    password2 = serializers.CharField(write_only=True, required=True)
+    class Meta:
+        model  = User
+        fields = ['username','email','first_name','last_name','password','password2','role','phone']
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError({"password": "Passwords do not match."})
+        return attrs
+    def create(self, validated_data):
+        validated_data.pop('password2')
+        password = validated_data.pop('password')
+        if validated_data.get('role') == 'admin':
+            validated_data['role'] = 'voter'
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, validators=[validate_password])
+'@
+  $s | Out-File -FilePath "accounts\serializers.py" -Encoding UTF8
+  Write-Host "accounts/serializers.py created!"
+
+  Copy and run this to create elections/serializers.py:
+
+  $s2 = @'
+from rest_framework import serializers
+from .models import Election, Candidate, Vote
+from accounts.models import User
+
+class UserMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = User
+        fields = ['id','username','first_name','last_name','photo']
+
+class CandidateSerializer(serializers.ModelSerializer):
+    user    = UserMiniSerializer(read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), source='user', write_only=True)
+    vote_count = serializers.ReadOnlyField()
+    class Meta:
+        model  = Candidate
+        fields = ['id','election','user','user_id','party','manifesto','photo','vote_count']
+
+class ElectionSerializer(serializers.ModelSerializer):
+    candidates  = CandidateSerializer(many=True, read_only=True)
+    total_votes = serializers.ReadOnlyField()
+    created_by  = UserMiniSerializer(read_only=True)
+    class Meta:
+        model  = Election
+        fields = ['id','title','description','election_type','status','start_date','end_date','banner','candidates','total_votes','created_by','created_at']
+        read_only_fields = ['created_by','created_at']
+    def create(self, validated_data):
+        validated_data['created_by'] = self.context['request'].user
+        return super().create(validated_data)
+
+class VoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Vote
+        fields = ['id','candidate','election','timestamp']
+        read_only_fields = ['timestamp']
+'@
+  $s2 | Out-File -FilePath "elections\serializers.py" -Encoding UTF8
+  Write-Host "elections/serializers.py created!"
+
+--- Run database migrations ---
+
+  python manage.py makemigrations accounts
+  python manage.py makemigrations elections
+  python manage.py migrate
+
+--- Create the Admin account ---
+
+  python manage.py createsuperuser
+
+  It will ask for:
+    Username  : choose any (e.g. admin)
+    Email     : any email (e.g. admin@vote.com)
+    Password  : choose a strong password (min 8 chars)
+    Remember these — you will use them to log in as Admin!
+
+--- Set the admin role (IMPORTANT) ---
+
+  python manage.py shell
+
+  Then type these lines one by one:
+
+    from accounts.models import User
+    u = User.objects.get(username='admin')
+    u.role = 'admin'
+    u.is_staff = True
+    u.is_superuser = True
+    u.save()
+    print("Role set to:", u.role)
+    exit()
+
+  Replace 'admin' with whatever username you chose above.
+
+--- Start the Django server ---
+
+  python manage.py runserver
+
+  Keep this terminal open and running!
+  Django is now running at: http://127.0.0.1:8000
+
+================================================================
+STEP 4 — SETUP THE FRONTEND (React)
+================================================================
+
+Open a NEW PowerShell window (keep the Django one running).
+
+--- Navigate to frontend folder ---
+
+  cd C:\Projects\voting\frontend
+  (change path to match where you extracted the project)
+
+--- Install Node packages ---
+
+  npm install
+
+--- Start the React server ---
+
+  npm run dev
+
+  Keep this terminal open and running!
+  React is now running at: http://localhost:5173
+
+================================================================
+STEP 5 — OPEN THE APP IN BROWSER
+================================================================
+
+Open your browser and go to:
+
+  Main App    →  http://localhost:5173
+  Login Page  →  http://localhost:5173/login
+  Register    →  http://localhost:5173/register
+
+  Django Admin Panel → http://127.0.0.1:8000/admin
+  (use the superuser username and password you created)
+
+================================================================
+STEP 6 — HOW TO USE THE APP
+================================================================
+
+  AS ADMIN:
+  1. Go to http://localhost:5173/login
+  2. Click the "Admin" tab
+  3. Enter your superuser username and password
+  4. You will be taken to the Admin Dashboard
+  5. Create elections, add candidates, manage voters
+
+  AS VOTER:
+  1. Go to http://localhost:5173/register
+  2. Select "Voter" and fill in the form
+  3. Ask the Admin to verify your account
+  4. Log in and vote in active elections
+
+  AS CANDIDATE:
+  1. Go to http://localhost:5173/register
+  2. Select "Candidate" and fill in the form
+  3. Admin adds you to an election
+  4. Log in and view your stats
+
+================================================================
+EVERY DAY — HOW TO RUN THE PROJECT
+================================================================
+
+You only need to do Steps 3-4 once.
+Every day after that, just do this:
+
+  Terminal 1 (Backend):
+    cd C:\Projects\voting\backend
+    .venv\Scripts\activate
+    python manage.py runserver
+
+  Terminal 2 (Frontend):
+    cd C:\Projects\voting\frontend
+    npm run dev
+
+  Then open: http://localhost:5173
+
+================================================================
+COMMON ERRORS AND FIXES
+================================================================
+
+ERROR: ModuleNotFoundError: No module named 'rest_framework'
+FIX:   Your virtual environment is not activated.
+       Run: .venv\Scripts\activate
+       Then: pip install djangorestframework
+
+ERROR: ModuleNotFoundError: No module named 'accounts.serializers'
+FIX:   The serializers.py file is missing.
+       Run the PowerShell commands in Step 3 above.
+
+ERROR: django.db.utils.OperationalError: no such table
+FIX:   Migrations haven't been run yet.
+       Run: python manage.py makemigrations
+            python manage.py migrate
+
+ERROR: CORS error / Network Error in browser console
+FIX:   Open backend/voting_backend/settings.py
+       Make sure this line exists:
+       CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
+
+ERROR: 404 Not Found on /api/auth/register/
+FIX:   Open backend/voting_backend/urls.py
+       Make sure these lines are NOT commented out:
+       path('api/auth/', include('accounts.urls')),
+       path('api/elections/', include('elections.urls')),
+
+ERROR: White screen on http://localhost:5173
+FIX:   Open browser, press F12, go to Console tab.
+       Check for red errors.
+       Most likely fix: cd frontend && npm install
+
+ERROR: Port 8000 is already in use
+FIX:   Run Django on a different port:
+       python manage.py runserver 8001
+       Then open frontend/src/api/axios.js and change:
+       baseURL: 'http://localhost:8001/api'
+
+ERROR: Admin login not working
+FIX:   The admin role may not be set. Run:
+       python manage.py shell
+       >>> from accounts.models import User
+       >>> u = User.objects.get(username='your_username')
+       >>> u.role = 'admin'
+       >>> u.save()
+       >>> exit()
+
+ERROR: npm run dev gives "vite not found"
+FIX:   cd frontend
+       npm install
+       npm run dev
+
+================================================================
+PROJECT STRUCTURE (for reference)
+================================================================
+
+  voting/
+  ├── README.txt              ← this file
+  ├── backend/                ← Django REST API
+  │   ├── manage.py
+  │   ├── requirements.txt
+  │   ├── voting_backend/     ← project settings
+  │   │   ├── settings.py
+  │   │   └── urls.py
+  │   ├── accounts/           ← user auth app
+  │   │   ├── models.py
+  │   │   ├── serializers.py
+  │   │   ├── views.py
+  │   │   └── urls.py
+  │   └── elections/          ← voting logic app
+  │       ├── models.py
+  │       ├── serializers.py
+  │       ├── views.py
+  │       ├── urls.py
+  │       └── permissions.py
+  └── frontend/               ← React app
+      ├── src/
+      │   ├── App.jsx
+      │   ├── main.jsx
+      │   ├── index.css
+      │   ├── api/axios.js
+      │   ├── store/authStore.js
+      │   ├── components/layouts/
+      │   └── pages/
+      │       ├── auth/
+      │       ├── admin/
+      │       ├── voter/
+      │       └── candidate/
+      └── package.json
+
+================================================================
+TECH STACK
+================================================================
+
+  Backend  : Python 3.12 + Django 5 + Django REST Framework
+  Auth     : JWT (JSON Web Tokens) via djangorestframework-simplejwt
+  Database : SQLite (file-based, no extra setup needed)
+  Frontend : React 18 + Vite + plain CSS
+  State    : Zustand
+  HTTP     : Axios
+
+================================================================
+NEED HELP?
+================================================================
+
+  If you get stuck, check the error message carefully.
+  Most errors are caused by:
+    1. Virtual environment not activated (.venv\Scripts\activate)
+    2. Missing serializers.py file (run the PowerShell commands)
+    3. Migrations not run (python manage.py migrate)
+    4. Both servers not running at the same time
+
+================================================================
+                    GOOD LUCK!
+================================================================

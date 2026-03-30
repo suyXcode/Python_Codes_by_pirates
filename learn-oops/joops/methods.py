@@ -55,7 +55,7 @@ class Bank:
         return amount
     
 
-c1 = Bank('Divya','Noida',10000)
+c1 = Bank('Divyansh','Noida',10000)
 c2 = Bank('Nitu','Noida',20000)
 
 
