@@ -9,6 +9,7 @@ This project generates a **complete ASCII Table** with details such as:
 - Hexadecimal Value
 - Binary Value
 
+
 It is useful for **students, developers, and programmers** who want a quick reference to ASCII codes.
 
 ---
