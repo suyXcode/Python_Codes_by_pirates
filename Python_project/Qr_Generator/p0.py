@@ -6,5 +6,6 @@ s = "https://www.youtube.com/"
 url = pyqrcode.create(s)
 # save the qr code generated
 url.svg("Qr_Generator/youtube.svg", scale = 8)
+
 # save as png file
 url.png("Qr_Generator/youtube.png", scale = 6)
