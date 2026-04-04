@@ -26,6 +26,7 @@ Each character (letters, digits, symbols, control characters) is represented by 
 
 ---
 
+
 ## 📊 Full ASCII Table (0–127)
 
 | Char | Decimal | Hex  | Binary    | Description        |
