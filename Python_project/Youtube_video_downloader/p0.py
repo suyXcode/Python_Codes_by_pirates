@@ -1,7 +1,7 @@
 from pytube import YouTube
 from pytube.exceptions import PytubeError
 
-
+# Download the video
 def download_video(url, output_path="downloads"):
     try:
         print("🔄 Connecting to YouTube...")
