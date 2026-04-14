@@ -19,4 +19,4 @@ while num > 0:
     num = num // 10
 
 print(f"Reversed Number: {reverse}")
-
+Fibonacci Series using a single variable
