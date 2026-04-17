@@ -82,5 +82,5 @@ You can also try solving them in **C, C++, Java, or JavaScript** for practice.
 🔗 [Github](https://github.com/suyXcode)  
 💼 [Linkedin](https://www.linkedin.com/in/suyxcode/)  
 🌐 [Portfolio](https://suyxcode.netlify.app)
-
+---
 
