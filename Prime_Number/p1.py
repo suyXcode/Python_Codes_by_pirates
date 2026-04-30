@@ -16,13 +16,11 @@ Algorithm to Check if a Number is Prime
          Initialize i = 2
 
          Set is_prime = True
-
 5.       Repeat while i <= num - 1:
 
 6.              If num % i == 0, then
                       → Set is_prime = False
                       → Break the loop.
-
 7.              Otherwise, increment i by 1.
 
 8.   After the loop:
