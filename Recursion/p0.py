@@ -5,4 +5,3 @@ while s>0:
    rev = rev*10 + n%10
    n//=10
 print("rev",rev)
-    
